@@ -254,7 +254,7 @@
 
         //取得城市的 名稱及代號
         function getBasciCity() {
-            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Basic/City`)
+            return axios.get(`https://fhy.wra.gov.tw/WraApi/v1/Basic/City`)
                 .then(function (response) {
                     // handle success
                     return response.data;
@@ -267,7 +267,7 @@
 
         //取得指定城市的 區域名稱及代號
         function getBasciCityArea(city) {
-            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Basic/${city}/Town`)
+            return axios.get(`https://fhy.wra.gov.tw/WraApi/v1/Basic/${city}/Town`)
                 .then(function (response) {
                     // handle success
                     return response.data;
@@ -280,7 +280,7 @@
 
         //取得各水庫基本資料
         function getReservoirInf_station() {
-            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Reservoir/Station`)
+            return axios.get(`https://fhy.wra.gov.tw/WraApi/v1/Reservoir/Station`)
                 .then(function (response) {
                     // handle success
                     return response.data;
@@ -293,7 +293,7 @@
 
         //取得各水庫及時資訊
         function getReservoirInf_realTime() {
-            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Reservoir/RealTimeInfo`)
+            return axios.get(`https://fhy.wra.gov.tw/WraApi/v1/Reservoir/RealTimeInfo`)
                 .then(function (response) {
                     // handle success
                     return response.data;
