@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- <iframe src="https://water.taiwanstat.com/" width="800" height="600" frameborder="0"></iframe> -->
+    <div id="app">
+        <!-- 
+        北部地區：基隆市、臺北市、新北市、桃園市、新竹市／縣、苗栗縣
+        中部地區：臺中市、彰化縣、南投縣、雲林縣、嘉義市／縣
+        南部地區：台南市／縣、高雄市、屏東縣、澎湖縣
+        東部地區：宜蘭縣、花蓮縣、臺東縣 -->
+
+        <label for="all">
+            <input type="radio" id="all" name="area" value="all" v-model="part_chioce">
+            全部
+        </label>
+        <label for="north">
+            <input type="radio" id="north" name="area" value="north" v-model="part_chioce">
+            北部
+        </label><label for="middle">
+            <input type="radio" id="middle" name="area" value="middle" v-model="part_chioce">
+            中部
+        </label>
+        <label for="south">
+            <input type="radio" id="south" name="area" value="south" v-model="part_chioce">
+            南部
+        </label>
+        <label for="others">
+            <input type="radio" id="others" name="area" value="others" v-model="part_chioce">
+            其他
+        </label>
+
+        <div class="reservoirGroup">
+            <div class="showReservoir" v-for="(a, num) in reservoir_chioce" v-if="reservoirRealTime_chioce[num] != null">
+                <div class="showReservoir_inner">
+                    <div class="inf">
+                        <div class="title">
+                            <!-- {{a.StationNo}}-{{a.StationName}} -->
+                            <p>{{a.StationName}}</p>
+                            <p>{{useCityCodeSearchCityName(a.CityCode)}}</p>
+                        </div>
+                        <div class="inf_inner" v-if="reservoirRealTime_chioce[num] == null">
+                            <div class="noInf">
+                                - 沒有此水庫的資訊
+                            </div>
+                        </div>
+                        <div class="inf_inner" v-else>
+                            <div
+                                :class={percentageOfStorage:true,red:!HorL(reservoirRealTime_chioce[num].PercentageOfStorage.toFixed(2))}>
+                                <div class="inner">
+                                    <p>{{reservoirRealTime_chioce[num].PercentageOfStorage.toFixed(2)}}%</p>
+                                    <div :class={percentageOfStorage_water:true,red:!HorL(reservoirRealTime_chioce[num].PercentageOfStorage.toFixed(2))}
+                                        :style="{height:reservoirRealTime_chioce[num].PercentageOfStorage.toFixed(2)+'%'}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="content">
+                                <p>
+                                    有效蓄水量: {{reservoirRealTime_chioce[num].EffectiveStorage.toFixed(2)}}(萬立方公尺)
+                                </p>
+                                <p>
+                                    更新時間: {{reservoirRealTime_chioce[num].Time}}
+                                </p>
+                                <input type="button" value="Learn More">
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+       
+    </div>
+
+    <!--axios cdn-->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Vue -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+
+    <script>
+
+        new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    citys: [], //axois全內容
+                    part_chioce: 'all',
+                    part_choiceArr: ["臺北市", "高雄市", "新北市", "基隆市", "桃園市", "新竹縣",
+                        "新竹市", "苗栗縣", "臺中市", "南投縣", "彰化縣", "雲林縣", "嘉義縣", "嘉義市",
+                        "臺南市", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣", "澎湖縣", "金門縣", "連江縣"],
+                    area_chioce: [],
+                    reservoir: [], //axois全內容
+                    reservoir_chioce: [],
+                    reservoirRealTime: [], //axois全內容
+                    reservoirRealTime_chioce: []
+                }
+            },
+            created: async function () {
+                //初始城市陣列
+                this.citys = await getBasciCity();
+                //初始水庫陣列
+                this.reservoir = await getReservoirInf_station();
+                //初始化水庫即時資訊陣列
+                this.reservoirRealTime = await getReservoirInf_realTime();
+                //初始選定區塊的陣列
+                this.area_chioce = await searchKeyWordInObjectArray(this.citys, this.part_choiceArr);
+                this.reservoir_chioce = await searchKeyWordInObjectArray2(this.reservoir, this.area_chioce);
+                this.reservoirRealTime_chioce = await searchKeyWordInObjectArray3(this.reservoirRealTime, this.reservoir_chioce);
+            },
+            mounted: async function () {
+
+            },
+            methods: {
+                HorL: function (num) {
+                    if (num >= 50) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                },
+                useCityCodeSearchCityName:function(code){
+                    let name;
+                    this.citys.map(function(data){
+                        if(data.CityCode == code){
+                            
+                            name = data.CityName_Ch;
+                        }
+                    });
+                    return name;
+                }
+            },
+            watch: {
+                part_chioce: function () {
+                    if (this.part_chioce == "all") {
+                        this.part_choiceArr = ["臺北市", "高雄市", "新北市", "基隆市", "桃園市", "新竹縣",
+                            "新竹市", "苗栗縣", "臺中市", "南投縣", "彰化縣", "雲林縣", "嘉義縣", "嘉義市",
+                            "臺南市", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣", "澎湖縣", "金門縣", "連江縣"]
+                    }
+                    else if (this.part_chioce == "north") {
+                        this.part_choiceArr = ["臺北市", "新北市", "基隆市", "桃園市", "新竹縣", "新竹市", "苗栗縣"]
+                    }
+                    else if (this.part_chioce == "middle") {
+                        this.part_choiceArr = ["臺中市", "南投縣", "彰化縣", "雲林縣", "嘉義縣", "嘉義市"]
+                    }
+                    else if (this.part_chioce == "south") {
+                        this.part_choiceArr = ["高雄市", "臺南市", "屏東縣", "澎湖縣"]
+                    }
+                    else if (this.part_chioce == "others") {
+                        this.part_choiceArr = ["宜蘭縣", "花蓮縣", "臺東縣", "金門縣", "連江縣"]
+                    }
+                    this.area_chioce = searchKeyWordInObjectArray(this.citys, this.part_choiceArr);
+                    this.reservoir_chioce = searchKeyWordInObjectArray2(this.reservoir, this.area_chioce);
+                    this.reservoirRealTime_chioce = searchKeyWordInObjectArray3(this.reservoirRealTime, this.reservoir_chioce);
+                }
+            }
+        })
+
+        //測試用function
+        async function getData(method, data = "none") {
+            if (data == "none") {
+                let result = await method();
+                console.log(result);
+            }
+            else {
+                let result = await method(data);
+                console.log(result);
+            }
+        }
+
+        //用指定的縣市陣列，搜尋對應的內容
+        function searchKeyWordInObjectArray(arr, key) {
+            let result = [];
+            let a = 0;
+
+            for (let i = 0; i < key.length; i++) {
+                let b = arr.map((data) => {
+                    if (data.CityName_Ch == key[i]) {
+                        result[a] = data;
+                        a++;
+                    }
+                });
+            }
+
+            if (result.length == 0) {
+                return '沒有資訊'
+            }
+            else {
+                return result;
+            }
+        }
+
+        //用指定的縣市陣列，搜尋到的內容在搜尋水庫資訊
+        function searchKeyWordInObjectArray2(arr, key) {
+            let result = [];
+            let a = 0;
+
+            for (let i = 0; i < key.length; i++) {
+                let b = arr.map((data) => {
+                    if (data.CityCode == key[i].CityCode && data.HydraulicConstruction == 1) {
+                        result[a] = data;
+                        a++;
+                    }
+                });
+            }
+
+            if (result.length == 0) {
+                return '沒有資訊'
+            }
+            else {
+                return result;
+            }
+        }
+
+        function getReservoir(arr, key) {
+            let result;
+            arr.map((data) => {
+                if (data.StationNo == key) {
+                    result = data;
+                }
+            })
+            return result;
+        }
+
+        function searchKeyWordInObjectArray3(arr, key) {
+            let result = [];
+            let a = 0;
+
+            key.map((data) => {
+                result[a] = getReservoir(arr, data.StationNo);
+                a++
+            })
+
+            if (result.length == 0) {
+                return '沒有資訊'
+            }
+            else {
+                return result;
+            }
+        }
+
+
+
+
+
+
+        //取得城市的 名稱及代號
+        function getBasciCity() {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Basic/City`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+        //取得指定城市的 區域名稱及代號
+        function getBasciCityArea(city) {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Basic/${city}/Town`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+        //取得各水庫基本資料
+        function getReservoirInf_station() {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Reservoir/Station`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+        //取得各水庫及時資訊
+        function getReservoirInf_realTime() {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Reservoir/RealTimeInfo`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+    </script>
+</body>
+
+</html>

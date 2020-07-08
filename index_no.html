@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- <iframe src="https://water.taiwanstat.com/" width="800" height="600" frameborder="0"></iframe> -->
+    <div id="app">
+        <select name="city" id="" v-model="nowChioceCity">
+            <option v-for="a in citys" v-bind:value="a.CityName_En">{{a.CityName_Ch}}</option>
+        </select>
+        <select name="area" id="">
+            <option v-for="a in areas" v-bind:value="a.TownCode">{{a.TownName}}</option>
+        </select>
+
+        <label for="all">
+            全部:
+            <input type="radio" id="all" name="area" value="all">
+        </label>
+        <label for="north">
+            北部:
+            <input type="radio" id="north" name="area" value="north">
+        </label><label for="middle">
+            中部:
+            <input type="radio" id="middle" name="area" value="middle">
+        </label><label for="south">
+            南部:
+            <input type="radio" id="south" name="area" value="south">
+        </label>
+        <label for="others">
+            外島:
+            <input type="radio" id="others" name="area" value="others">
+        </label>
+
+        {{nowChioceCityId}}
+        <br>
+        {{reservoirChioce}}
+        <div class="showReservoir" v-for="a in reservoirChioce">
+            <div class="pic">
+
+            </div>
+            <div class="inf">
+                {{a.CityCode}}-{{a.StationName}}-{{a.StationNo}}
+            </div>
+        </div>
+    </div>
+
+    <!--axios cdn-->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Vue -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+
+    <script>
+
+        new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    citys: [],
+                    nowChioceCity: '',
+                    nowChioceCityId: '',
+                    areas: [],
+                    reservoir: [],
+                    reservoirChioce: [],
+                    reservoir_rightNow:[]
+                }
+            },
+            created: async function () {
+                //初始城市陣列
+                this.citys = await getBasciCity();
+                //初始區域選單
+                this.nowChioceCity = this.citys[0].CityName_En;
+                this.nowChioceCityId = this.citys[0].CityCode;
+                //初始區域陣列
+                this.areas = await getBasciCityArea(this.nowChioceCity);
+                //初始水庫陣列
+                this.reservoir = await getReservoirInf_station();
+                //透過cityCode 更新對應的水庫資訊
+                this.reservoirChioce = await searchKeyWordInObjectArray2(this.reservoir, this.nowChioceCityId.CityCode);
+                //初始化水庫即時資訊陣列
+                this. reservoir_rightNow = await getReservoirInf_realTime();
+                console.log(this. reservoir_rightNow);
+            },
+            mounted: function () {
+
+            },
+            watch: {
+                nowChioceCity: async function () {
+                    //當選擇的城市變動時，區域選單同步更新
+                    this.areas = await getBasciCityArea(this.nowChioceCity);
+                    //cityCode 更新
+                    this.nowChioceCityId = await searchKeyWordInObjectArray(this.citys, this.nowChioceCity);
+                    //透過cityCode 更新對應的水庫資訊
+                    this.reservoirChioce = await searchKeyWordInObjectArray2(this.reservoir, this.nowChioceCityId.CityCode);
+                }
+            }
+        })
+
+        async function getData(method, data = "none") {
+            if (data == "none") {
+                let result = await method();
+                console.log(result);
+            }
+            else {
+                let result = await method(data);
+                console.log(result);
+            }
+        }
+
+        // 使用城市英文名,找到cityCode
+        function searchKeyWordInObjectArray(arr, key) {
+            // console.log(arr);
+            // console.log(key);
+
+            function search(data) {
+                return data.CityName_En === key;
+            }
+
+            return arr.find(search);
+        }
+
+        // 使用cityCode,找到對應的水庫資料
+        function searchKeyWordInObjectArray2(arr, key) {
+            // console.log(key);
+            let reservoir = [];
+            let a = 0;
+            let result = arr.map((data) => {
+                //只取指定城市的水庫
+                if (data.CityCode == key + '' && data.HydraulicConstruction == 1) {
+                    reservoir[a] = data;
+                    a++;
+                }
+            });
+            if (reservoir.length == 0) {
+                return '本區沒有水庫資料'
+            }
+            else {
+                return reservoir;
+            }
+        }
+
+        // 使用水站code,找相對應的即時資訊
+        function searchKeyWordInObjectArray3(arr,key) {
+
+        }
+
+
+
+
+
+
+
+        //取得城市的 名稱及代號
+        function getBasciCity() {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Basic/City`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+        //取得指定城市的 區域名稱及代號
+        function getBasciCityArea(city) {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Basic/${city}/Town`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+        //取得各水庫基本資料
+        function getReservoirInf_station() {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Reservoir/Station`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+        //取得各水庫及時資訊
+        function getReservoirInf_realTime() {
+            return axios.get(`http://fhy.wra.gov.tw/WraApi/v1/Reservoir/RealTimeInfo`)
+                .then(function (response) {
+                    // handle success
+                    return response.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    return error;
+                });
+        }
+
+    </script>
+</body>
+
+</html>

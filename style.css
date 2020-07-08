@@ -1,0 +1,108 @@
+.reservoirGroup {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; }
+  .reservoirGroup .showReservoir {
+    width: 300px;
+    margin: 10px 10px; }
+    .reservoirGroup .showReservoir .showReservoir_inner .inf {
+      width: 100%;
+      border: 1px solid gray;
+      padding: 20px;
+      box-sizing: border-box; }
+      .reservoirGroup .showReservoir .showReservoir_inner .inf .title {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center; }
+        .reservoirGroup .showReservoir .showReservoir_inner .inf .title p {
+          margin: 0;
+          font-size: 24px;
+          margin-bottom: 10px; }
+      .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center; }
+        .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .noInf {
+          color: red; }
+        .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          background: white;
+          position: relative;
+          width: 200px;
+          height: 200px;
+          border-radius: 50%;
+          border: 7px solid #178bca;
+          color: #a4dbf8;
+          margin: 10px 0; }
+          .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage.red {
+            border: 7px solid #ffa077;
+            color: #ffa077;
+            font-size: 50px; }
+          .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage .inner {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            height: 95%;
+            width: 95%;
+            font-size: 36px;
+            overflow: hidden;
+            background: white;
+            border-radius: 50%; }
+            .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage .inner p {
+              z-index: 2; }
+            .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage .inner .percentageOfStorage_water {
+              position: absolute;
+              width: 100%;
+              height: 1%;
+              bottom: 0;
+              left: 0;
+              background: #178bca; }
+              .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage .inner .percentageOfStorage_water::before, .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage .inner .percentageOfStorage_water::after {
+                content: "";
+                position: absolute;
+                width: 500px;
+                height: 500px;
+                top: -130px;
+                left: 50%;
+                background-color: white;
+                border-radius: 45%;
+                transform: translate(-50%, -70%) rotate(0);
+                animation: rotate 6s linear infinite;
+                z-index: 1; }
+              .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .percentageOfStorage .inner .percentageOfStorage_water.red {
+                background: #f1c4b1; }
+        .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .content {
+          width: 100%; }
+          .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .content p {
+            margin: 0;
+            margin: 5px 0; }
+          .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .content input[type="button"] {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background: #337ab7;
+            color: white;
+            outline: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid #337ab7; }
+            .reservoirGroup .showReservoir .showReservoir_inner .inf .inf_inner .content input[type="button"]:hover {
+              background: white;
+              color: #337ab7; }
+
+@keyframes rotate {
+  50% {
+    transform: translate(-50%, -73%) rotate(180deg); }
+  100% {
+    transform: translate(-50%, -70%) rotate(360deg); } }
+
+/*# sourceMappingURL=style.css.map */
